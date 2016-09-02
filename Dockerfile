@@ -3,16 +3,20 @@
 from	centos:latest 
 
 # Install required packages
+run	yum -y update
+run	yum -y install epel-release
 run	yum -y install gcc python-devel pycairo pyOpenSSL python-memcached \
 	bitmap bitmap-fonts python-pip python-django-tagging \
 	python-sqlite2 python-rrdtool memcached python-simplejson python-gunicorn \
 	supervisor openssh-server sudo nginx
+run	pip install --upgrade pip
+run	yum clean all
 
 # Install graphite and carbon
-run	pip-python install whisper
-run 	pip-python install Twisted==11.1.0
-run 	pip-python install --install-option="--prefix=/var/lib/graphite" --install-option="--install-lib=/var/lib/graphite/lib" carbon
-run 	pip-python install --install-option="--prefix=/var/lib/graphite" --install-option="--install-lib=/var/lib/graphite/webapp" graphite-web
+run	pip install whisper
+run 	pip install Twisted==11.1.0
+run 	pip install --install-option="--prefix=/var/lib/graphite" --install-option="--install-lib=/var/lib/graphite/lib" carbon
+run 	pip install --install-option="--prefix=/var/lib/graphite" --install-option="--install-lib=/var/lib/graphite/webapp" graphite-web
 
 run	useradd -d /home/graphite -m -s /bin/bash graphite
 run	echo graphite:graphite | chpasswd
@@ -30,14 +34,14 @@ add	carbon.conf /var/lib/graphite/conf/carbon.conf
 add	storage-schemas.conf /var/lib/graphite/conf/storage-schemas.conf
 run	mkdir -p /var/lib/graphite/storage/whisper
 run	touch /var/lib/graphite/storage/graphite.db /var/lib/graphite/storage/index
-run	chown -R www-data /var/lib/graphite/storage
+run	chown -R nginx /var/lib/graphite/storage
 run	chmod 0775 /var/lib/graphite/storage /var/lib/graphite/storage/whisper
 run	chmod 0664 /var/lib/graphite/storage/graphite.db
 run	cd /var/lib/graphite/webapp/graphite && python manage.py syncdb --noinput
 
 # Grafana
 add	grafana.repo /etc/yum.repos.d/grafana.repo
-run 	yum install grafana
+run 	yum -y install grafana
 
 # Add grafana config
 add	./grafana-defaults.ini /usr/share/grafana/conf/defaults.ini
